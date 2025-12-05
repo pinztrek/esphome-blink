@@ -5,13 +5,16 @@ esphome:
 rp2040:
   board: rpipicow
 
+
 # Enable logging
 logger:
 
 # Enable Home Assistant API
 api:
   encryption:
-    key: "8F/nWL+L9T5LSBaBhGkX8xO3T1t9OoZm/Fc/A+4VFs0="
+    #key: "8F/nWL+L9T5LSBaBhGkX8xO3T1t9OoZm/Fc/A+4VFs0="
+    #key: "C11/kI/6x+g2s0W04604S7N51/Q0rWj7YjYw3Mv52/U="
+    key: !secret api_encryption_key
 
 ota:
   - platform: esphome
@@ -24,18 +27,50 @@ wifi:
   # Enable fallback hotspot in case wifi connection fails
   ap:
     ssid: "Blink Fallback Hotspot"
-    password: "U6bOiadpXlJJ"
+    password: "esphomepw"
 
-output:
+#-------------------------------------------------------
+# Homeassistant I/O code
+output: 
+  
+  # 1. Built-in LED (GPIO 25)
+  - platform: gpio
+    pin: 
+      number: 25
+      mode: output 
+    id: onboard_led_output
+  
+  # 2. External LED (GPIO 22)
+  - platform: gpio
+    pin: 22
+    id: external_led_pin
+
+# --- LIGHT COMPONENTS ---
+
+light:
+  # 1. Built-in LED Light
+  - platform: binary 
+    output: onboard_led_output
+    name: "Pico Built-in LED"
+
+  # 2. External LED Light
+  - platform: binary 
+    output: external_led_pin
+    name: "Pico Test LED"
+    id: test_led_light
+
+## INPUT: External Button (GPIO 21) ##
+binary_sensor:
   - platform: gpio
     pin:
-      number: 25
-      mode: output
-    id: LED
-
-interval:
-  - interval: 500ms
-    then:
-      - output.turn_on: LED
-      - delay: 250ms
-      - output.turn_off: LED
+      number: 21
+      mode: INPUT_PULLUP 
+      inverted: true
+    name: "Pico Test Button"
+    device_class: moving
+    on_press:
+      then:
+        - logger.log: "Test Button Pressed!"
+        # Action now uses 'light.toggle' and the 'test_led_light' ID
+        - light.toggle: 
+            id: test_led_light # Toggles the External LED Light
