@@ -1,9 +1,30 @@
 esphome:
-  name: rpi-pico
-  compile_process_limit: 1
+  name: blink
+  friendly_name: blink
 
 rp2040:
-  board: pico
+  board: rpipicow
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "8F/nWL+L9T5LSBaBhGkX8xO3T1t9OoZm/Fc/A+4VFs0="
+
+ota:
+  - platform: esphome
+    password: "9f6aac9d5e98fb4ba34f158083f13970"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot in case wifi connection fails
+  ap:
+    ssid: "Blink Fallback Hotspot"
+    password: "U6bOiadpXlJJ"
 
 output:
   - platform: gpio
